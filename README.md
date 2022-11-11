@@ -31,10 +31,14 @@ The following is an example of the output file:
 ```
 Token        Lexeme
 ---------------------
-Identifier     x
-Integer        5
-Keyword        while
-Operator       =
-Real           3.14
-Separator      ;
+Keyword        while          
+Separator      (              
+Identifier     s              
+Operator       <              
+Identifier     upper          
+Separator      )              
+Identifier     t              
+Operator       =              
+Integer        33.00          
+Separator      ;        
 ```

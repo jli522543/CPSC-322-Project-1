@@ -1,4 +1,4 @@
-#include <iostream> 
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <iomanip>
@@ -6,144 +6,180 @@
 #include <string.h>
 using namespace std;
 
-// enum for token types
-enum tokenType { IDENTIFIER, INTEGER, KEYWORD, OPERATOR, REAL, SEPARATOR, STRING, UNKNOWN, END_OF_FILE };
-/************************************************************************
- * tokenType lex(string token)
- *
- * Function; This function will take a string and return the token type
- *-----------------------------------------------------------------------
- * Parameter:  token (string) - The string to be checked for token type
- *-----------------------------------------------------------------------
- * Return: tokenType - The token type of the string
-************************************************************************/
-tokenType lexer(string token) {
-    // check if token is a keyword
-    if (token == "if" || token == "else" || token == "while" || token == "do" || token == "for" || token == "int" || token == "float" || token == "double" || token == "return" || token == "void" || token == "main" || token == "upper" || token == "lower") {
-        return KEYWORD;
-    }
-    // check if token is an operator
-    else if (token == "+" || token == "-" || token == "*" || token == "/" || token == "=" || token == "==" || token == "!=" || token == "<" || token == ">" || token == "<=" || token == ">=" || token == "++" || token == "--" || token == "&&" || token == "||" || token == "!" || token == "&" || token == "|" || token == "^" || token == "%" || token == "~" || token == "<<" || token == ">>" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "&=" || token == "|=" || token == "^=" || token == "<<=" || token == ">>=") {
-        return OPERATOR;
-    }
-    // check if token is a separator
-    else if (token == "(" || token == ")" || token == "{" || token == "}" || token == "[" || token == "]" || token == ";" || token == ",") {
-        return SEPARATOR;
-    }
-    // check if token is an identifier
-    else if (isalpha(token[0]) || token[0] == '_') {
-        return IDENTIFIER;
-    }
-    // check if token is an integer
-    else if (isdigit(token[0])) {
-        return INTEGER;
-    }
-    // check if token is a real
-    else if (isdigit(token[0]) && token.find('.') == string::npos) {
-        return REAL;
-    }
-    // check if token is a string
-    else if (token[0] == '"' && token[token.length() - 1] == '"') {
-        return STRING;
-    }
-    // check if token is end of file
-    else if (token == "EOF" || token == "eof") {
-        return END_OF_FILE;
-    }
-    // if none of the above, return error
-    else {
-        return UNKNOWN;
-    }
-}
+string keywords[] = {"auto", "break", "case", "char", "const", "continue", "default",
+                     "do", "double", "else", "enum", "extern", "float", "for", "goto",
+                     "if", "int", "long", "register", "return", "short", "signed",
+                     "sizeof", "static", "struct", "switch", "typedef", "union",
+                     "unsigned", "void", "volatile", "while"};
 
-void addToken(string tokenInput, ofstream& outputFile) {
-    tokenType token = lexer(tokenInput);
-    // output the lexeme and token to output_scode.txt
-    if (token == IDENTIFIER) {
-        outputFile << setw(15) << left << "Identifier" << setw(15) << left << tokenInput << endl;
-    }
-    else if (token == INTEGER) {
-        outputFile << setw(15) << left << "Integer" << setw(15) << left << tokenInput << endl;
-    }
-    else if (token == KEYWORD) {
-        outputFile << setw(15) << left << "Keyword" << setw(15) << left << tokenInput << endl;
-    }
-    else if (token == OPERATOR) {
-        outputFile << setw(15) << left << "Operator" << setw(15) << left << tokenInput << endl;
-    }
-    else if (token == REAL) {
-        outputFile << setw(15) << left << "Real" << setw(15) << left << tokenInput << endl;
-    }
-    else if (token == SEPARATOR) {
-        outputFile << setw(15) << left << "Separator" << setw(15) << left << tokenInput << endl;
-    }
-    else if (token == STRING) {
-        outputFile << setw(15) << left << "String" << setw(15) << left << tokenInput << endl;
-    }
-    else if (token == UNKNOWN) {
-        outputFile << setw(15) << left << "Unknown" << setw(15) << left << tokenInput << endl;
-    }
-}
+char operators[] = {'+', '-', '*', '/', '%', '=', '<', '>'};
 
-bool isSeperator(char c) {
-    if (c == '(' || c == ')' || c == '{' || c == '}' || c == '[' || c == ']' || c == ';' || c == ',') {
-        return true;
+char seperators[] = {'(', ')', '{', '}', '[', ']', ';', ',', '\"', '\''};
+
+bool isKeyword(string identifier)
+{
+    int length = sizeof(keywords) / sizeof(keywords[0]);
+    for (int i = 0; i < length; i++)
+    {
+        if (identifier.compare(keywords[i]) == 0)
+            return true;
     }
     return false;
 }
-/************************************************************************
- * main()
- *
- * Function; This function will read in a file and output the tokens and
- *          their types to a file called "output.txt".
- *-----------------------------------------------------------------------
- * Parameter:  None
- *-----------------------------------------------------------------------
- * Return: int - 0
-************************************************************************/
-int main()
+
+bool isOperator(char c)
 {
-    // open input_scode.txt to read in a lexeme
-    ifstream inputFile;
-    inputFile.open("input_scode.txt");
-    // open output_scode.txt to output the lexeme and token
-    ofstream outputFile;
-    outputFile.open("output.txt");
-    // create a token
-    string buffer;
-
-    outputFile << "Token"
-        << " \t \t "
-        << "Lexeme" << endl;
-    outputFile << "-----------------------" << endl;
-
-    /************************************************************************
-     * This while loop will read in a lexeme from input_scode.txt and then
-     * output the token and lexeme to output_scode.txt until the end of file
-     ************************************************************************/
-    char c;
-    while (inputFile.get(c))
+    int length = sizeof(operators) / sizeof(operators[0]);
+    for (int i = 0; i < length; i++)
     {
-        //If character is not new line / white space / seperator read character into buffer
-        if (c != ' ' && c != '\n' && !isSeperator(c)) {
-            buffer += c;
-        }
-         //If character is new line or white space add token if buffer is not empty and clear the buffer
-        if (c == ' ' || c == '\n') {
-            if (!buffer.empty()) {
-                addToken(buffer, outputFile);
-                buffer.clear();
-            }
-        }
-        //If character is a symbol determine it's meaning
-        if (isSeperator(c)) {
-            if (!buffer.empty()) {
-                addToken(buffer, outputFile);
-                buffer.clear();
-            }
-            addToken({ c }, outputFile);
+        if (c == operators[i])
+        {
+            return true;
         }
     }
+    return false;
+}
+
+bool isSeperator(char c)
+{
+    int length = sizeof(seperators) / sizeof(seperators[0]);
+    for (int i = 0; i < length; i++)
+    {
+        if (c == seperators[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/* Diagram of state table
+                                Input
+State   letter  digit   operators   seperators   whitespace  period
+1          2      4         6           8            1          8
+2          2      2         3           3            3          3
+3  A       1      1         1           1            1          1
+4          5      4         5           5            5          4
+5  A       1      1         1           1            1          1
+6          7      7         6           7            7          7
+7  A       1      1         1           1            1          1
+8  A       1      1         1           1            1          1
+
+States
+1. Starting state
+2. In identifier
+3. End of identifier
+4. In integer
+5. End of number (integer or double)
+6. In operator
+7. End of operator
+8. Seperator
+*/
+
+int stateTable[8][6] = {
+    2, 4, 6, 8, 1, 8,
+    2, 2, 3, 3, 3, 3,
+    1, 1, 1, 1, 1, 1,
+    5, 4, 5, 5, 5, 4,
+    1, 1, 1, 1, 1, 1,
+    7, 7, 6, 7, 7, 7,
+    1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1};
+
+int main()
+{
+    ifstream inputFile;
+    inputFile.open("input_scode.txt");
+    ofstream outputFile;
+    outputFile.open("output.txt");
+
+    char c;                                   // current char
+    string token;                             // string to hold token
+    int state = 0;                            // current state set to initial state by defualt
+    int col;                                  // column in state table
+
+    while ((inputFile.get(c)) && c != EOF)
+    {
+        // Determine column in state table
+        if (isalpha(c))
+        {
+            col = 0;
+        }
+        else if (isdigit(c))
+        {
+            col = 1;
+        }
+        else if (isOperator(c))
+        {
+            col = 2;
+        }
+        else if (isSeperator(c))
+        {
+            col = 3;
+        }
+        else if (c == ' ' || c == '\n')
+        {
+            col = 4;
+        }
+        else if (c == '.')
+        {
+            col = 5;
+        }
+        //Determine new state from input and current state
+        state = stateTable[state][col] - 1;
+
+        //To reach states 2 4 or 6 requires lexer to read 1 character past             the lexeme
+        //So if states 2 4 or 6 is reached the last input read should not be added to token, white space should be ignored as well
+        if(c != ' ' && state!= 2 && state != 4 && state!=6)
+            token += c;
+
+        // Switch case for states that are accepting
+        //If the state is accepting, clear the token and set state back to starting state of 0
+      //Also shift file pointer back for accepting states that read past the token
+        switch (state)
+        {
+        // Accepting state for identifier
+        case 2:
+            // Check if identifier is a keyword
+            if (isKeyword(token))
+            {
+                outputFile << setw(15) << left << "Keyword" << setw(15) << left << token << endl;
+                state = 0;
+                token.clear();
+            }
+            else
+            {
+                outputFile << setw(15) << left << "Identifier" << setw(15) << left << token << endl;
+                state = 0;
+                token.clear();
+            }
+            inputFile.seekg(-1, ios::cur);
+            break;
+        // Accepting state for number
+        case 4:
+            outputFile << setw(15) << left << "Integer" << setw(15) << left << token << endl;
+            state = 0;
+            token.clear();
+            inputFile.seekg(-1, ios::cur);
+            break;
+        // Accepting state for operator
+        case 6:
+            outputFile << setw(15) << left << "Operator" << setw(15) << left << token << endl;
+            state = 0;
+            token.clear();
+            inputFile.seekg(-1, ios::cur);
+            break;
+        // Accepting state for seperator
+        case 7:
+            outputFile << setw(15) << left << "Separator" << setw(15) << left << token << endl;
+            state = 0;
+            token.clear();
+            break;
+        default:
+            break;
+        }
+    }
+
     // close files
     inputFile.close();
     outputFile.close();
